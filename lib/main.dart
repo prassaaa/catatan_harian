@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -30,30 +29,43 @@ class MyApp extends StatelessWidget {
       title: 'Catatan Harian',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Colors.blue,
-        colorScheme: ColorScheme.fromSwatch().copyWith(
-          primary: Colors.blue,
-          secondary: Colors.blue.shade700,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFFC107), // Amber/Yellow
+          brightness: Brightness.light,
           surface: Colors.white,
+          onSurface: const Color(0xFF1A1A1A),
         ),
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: const Color(0xFFFFFDF5), // Warm white
         appBarTheme: const AppBarTheme(
           elevation: 0,
-          backgroundColor: Colors.white,
-          iconTheme: IconThemeData(color: Colors.blue),
+          scrolledUnderElevation: 0,
+          backgroundColor: Color(0xFFFFFDF5),
+          surfaceTintColor: Colors.transparent,
           titleTextStyle: TextStyle(
-            color: Colors.blue,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+            color: Color(0xFF1A1A1A),
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.5,
+          ),
+          iconTheme: IconThemeData(
+            color: Color(0xFF1A1A1A),
+            size: 24,
           ),
         ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
+        cardTheme: CardThemeData(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: Colors.grey.shade200, width: 1),
           ),
+          color: Colors.white,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFFFFC107),
+          foregroundColor: Color(0xFF1A1A1A),
+          elevation: 8,
+          shape: CircleBorder(),
         ),
       ),
       home: const HomeScreen(),

@@ -24,11 +24,22 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Catatan Harian'),
+        centerTitle: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.save_alt),
-            onPressed: _exportNotes,
-            tooltip: 'Export ke JSON',
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFC107).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.file_download_outlined),
+              onPressed: _exportNotes,
+              tooltip: 'Export ke JSON',
+              style: IconButton.styleFrom(
+                foregroundColor: const Color(0xFF1A1A1A),
+              ),
+            ),
           ),
         ],
       ),
@@ -40,17 +51,34 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.note_alt_outlined,
-                    size: 80,
-                    color: Colors.blue.withOpacity(0.5),
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFC107).withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.note_add_outlined,
+                      size: 64,
+                      color: const Color(0xFFFFC107).withOpacity(0.8),
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
                     'Belum ada catatan',
                     style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[600],
+                      fontSize: 20,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                      letterSpacing: -0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tap tombol + untuk membuat catatan pertama',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
                     ),
                   ),
                 ],
@@ -58,93 +86,149 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
           
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: box.length,
-            itemBuilder: (context, index) {
-              final note = box.getAt(index);
-              return _buildNoteCard(context, note!, index);
-            },
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.all(20),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final note = box.getAt(index);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildNoteCard(context, note!, index),
+                      );
+                    },
+                    childCount: box.length,
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToEditor(context),
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: const Color(0xFFFFC107),
+        foregroundColor: const Color(0xFF1A1A1A),
+        elevation: 8,
+        child: const Icon(Icons.add, size: 28),
       ),
     );
   }
 
   Widget _buildNoteCard(BuildContext context, Note note, int index) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Dismissible(
-        key: Key(note.id),
-        background: Container(
-          decoration: BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.circular(12),
+    return Dismissible(
+      key: Key(note.id),
+      background: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.red.shade400, Colors.red.shade600],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          child: const Icon(
-            Icons.delete,
-            color: Colors.white,
-          ),
+          borderRadius: BorderRadius.circular(16),
         ),
-        direction: DismissDirection.endToStart,
-        onDismissed: (direction) {
-          _noteService.deleteNote(index);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${note.title} dihapus')),
-          );
-        },
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete_outline, color: Colors.white, size: 28),
+            SizedBox(height: 4),
+            Text(
+              'Hapus',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+      direction: DismissDirection.endToStart,
+      onDismissed: (direction) {
+        _noteService.deleteNote(index);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                Text('${note.title} berhasil dihapus'),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      },
+      child: Card(
         child: InkWell(
           onTap: () => _navigateToEditor(context, note: note, index: index),
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Text(
                         note.title,
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.3,
                         ),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Text(
-                      dateFormat.format(note.createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFC107).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        dateFormat.format(note.createdAt),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[700],
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   note.content,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[800],
+                    height: 1.5,
+                    color: Colors.grey[600],
                   ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.grey[400],
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -156,11 +240,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _navigateToEditor(BuildContext context, {Note? note, int? index}) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => NoteEditorScreen(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => NoteEditorScreen(
           note: note,
           index: index,
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCubic;
+
+          var tween = Tween(begin: begin, end: end).chain(
+            CurveTween(curve: curve),
+          );
+
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -184,16 +283,32 @@ class _HomeScreenState extends State<HomeScreen> {
       );
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Data catatan berhasil diekspor!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Text('Data catatan berhasil diekspor!'),
+            ],
+          ),
+          backgroundColor: Colors.green.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Gagal mengekspor data: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Row(
+            children: [
+              const Icon(Icons.error, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(child: Text('Gagal mengekspor data: ${e.toString()}')),
+            ],
+          ),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     }
